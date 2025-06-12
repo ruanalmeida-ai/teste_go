@@ -104,11 +104,17 @@ def create_map():
     if not gdf_credi_filtered.empty:
         # Criar uma cópia dos dados filtrados
         gdf_credi_map = gdf_credi_filtered.copy()
-        # Converter a coluna de data para string
+        
+        # Converter todas as colunas para tipos serializáveis
         gdf_credi_map['dt_emissao'] = gdf_credi_map['dt_emissao'].astype(str)
+        gdf_credi_map['vl_parc_cr'] = gdf_credi_map['vl_parc_cr'].astype(float)
+        gdf_credi_map['vl_area_in'] = gdf_credi_map['vl_area_in'].astype(float)
+        
+        # Converter para GeoJSON string
+        geojson_data = gdf_credi_map.to_json()
         
         folium.GeoJson(
-            gdf_credi_map,
+            geojson_data,
             name="CrediGeo",
             style_function=lambda x: {
                 'fillColor': 'blue',
