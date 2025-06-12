@@ -106,12 +106,29 @@ def create_map():
         gdf_credi_map = gdf_credi_filtered.copy()
         
         # Converter todas as colunas para tipos serializáveis
-        gdf_credi_map['dt_emissao'] = gdf_credi_map['dt_emissao'].astype(str)
+        # Primeiro converter para datetime, depois para string
+        gdf_credi_map['dt_emissao'] = pd.to_datetime(gdf_credi_map['dt_emissao']).dt.strftime('%Y-%m-%d')
         gdf_credi_map['vl_parc_cr'] = gdf_credi_map['vl_parc_cr'].astype(float)
         gdf_credi_map['vl_area_in'] = gdf_credi_map['vl_area_in'].astype(float)
         
-        # Converter para GeoJSON string
-        geojson_data = gdf_credi_map.to_json()
+        # Criar um dicionário com os dados
+        features = []
+        for idx, row in gdf_credi_map.iterrows():
+            feature = {
+                "type": "Feature",
+                "geometry": row.geometry.__geo_interface__,
+                "properties": {
+                    "dt_emissao": row['dt_emissao'],
+                    "vl_parc_cr": float(row['vl_parc_cr']),
+                    "vl_area_in": float(row['vl_area_in'])
+                }
+            }
+            features.append(feature)
+        
+        geojson_data = {
+            "type": "FeatureCollection",
+            "features": features
+        }
         
         folium.GeoJson(
             geojson_data,
